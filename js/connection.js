@@ -1,6 +1,6 @@
 /**
  * YAS Remote Pro - Connection & Message Handler
- * Version: 3.1
+ * Version: 3.2
  */
 
 /**
@@ -61,6 +61,17 @@ function handleMessage(data) {
             renderSessions(data.sessions);
             break;
             
+        // Connected Users
+        case 'connected_users':
+            renderConnectedUsers(data.users);
+            break;
+            
+        case 'users_changed':
+            STATE.connectedUsers = data.users || [];
+            updateUsersCount(data.totalCount);
+            renderConnectedUsers(data.users);
+            break;
+            
         // File Transfer
         case 'file_upload_ready':
             handleFileUploadReady(data);
@@ -85,6 +96,7 @@ function handleMessage(data) {
             break;
             
         case 'browse_result':
+        case 'browse_result_relay':
             if (data.success) {
                 renderBrowserItems(data);
             } else {
@@ -102,6 +114,25 @@ function handleMessage(data) {
                 toast('Saved to PC: ' + data.path, 'success');
             }
             break;
+            
+        // File Manager
+        case 'file_operation_result':
+            handleFileOperationResult(data);
+            break;
+            
+        // File Watcher
+        case 'file_changed':
+            handleFileChange(data);
+            break;
+            
+        case 'watcher_result':
+            handleWatcherResult(data);
+            break;
+            
+        case 'watched_folders':
+            STATE.watchedFolders = data.folders || [];
+            renderWatchedFolders();
+            break;
     }
 }
 
@@ -112,6 +143,8 @@ function handleConnected(data) {
     STATE.connected = true;
     STATE.sessionId = data.sessionId;
     STATE.sessionExpiry = Date.now() + (data.expiresIn || CONFIG.SESSION_TIMEOUT);
+    STATE.connectedUsers = [];
+    STATE.watchedFolders = [];
     
     // Save trusted device if deviceId returned
     if (data.deviceId) {
@@ -127,6 +160,7 @@ function handleConnected(data) {
     startSessionTimer();
     startMonitor();
     loadRecentFiles();
+    getConnectedUsers();
     
     toast(data.autoLogin ? 'Auto-connected! 🔐' : 'Connected!');
 }
@@ -156,33 +190,75 @@ function updateMonitor(data) {
 }
 
 /**
+ * Get connected users
+ */
+function getConnectedUsers() {
+    if (STATE.ws && STATE.connected) {
+        STATE.ws.send(JSON.stringify({ type: 'get_connected_users' }));
+    }
+}
+
+/**
+ * Update users count badge
+ */
+function updateUsersCount(count) {
+    const badge = document.getElementById('usersCount');
+    if (badge) {
+        badge.textContent = count || 0;
+        badge.style.display = count > 0 ? 'inline' : 'none';
+    }
+}
+
+/**
+ * Render connected users
+ */
+function renderConnectedUsers(users) {
+    const container = document.getElementById('usersListBody');
+    if (!container) return;
+    
+    if (!users?.length) {
+        container.innerHTML = '<p style="color: var(--text2); text-align: center; padding: 20px;">No connected users</p>';
+        return;
+    }
+    
+    container.innerHTML = users.map(u => {
+        const device = u.deviceInfo || {};
+        const isCurrent = u.isCurrentUser;
+        const trusted = device.trusted ? '🔐' : '📱';
+        
+        return `
+            <div class="user-item ${isCurrent ? 'current' : ''}">
+                <div class="user-icon">${trusted}</div>
+                <div class="user-info">
+                    <div class="user-name">${device.name || 'Unknown'} ${isCurrent ? '(You)' : ''}</div>
+                    <div class="user-meta">${device.browser || ''}</div>
+                </div>
+                ${!isCurrent ? `<button class="user-kick" onclick="kickUser('${u.sessionId}')">✕</button>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Kick user
+ */
+function kickUser(sessionId) {
+    if (confirm('Disconnect this user?')) {
+        STATE.ws.send(JSON.stringify({ type: 'kick_session', sessionId: sessionId }));
+    }
+}
+
+/**
  * Show sessions modal
  */
 function showSessionsModal() {
     document.getElementById('sessionsModal').classList.add('show');
-    send({ type: 'get_sessions' });
+    getConnectedUsers();
 }
 
 /**
- * Render sessions list
+ * Render sessions list (legacy)
  */
 function renderSessions(sessions) {
-    const body = document.getElementById('sessionsBody');
-    
-    if (!sessions?.length) {
-        body.innerHTML = '<p style="color: var(--text2); text-align: center;">No active sessions</p>';
-        return;
-    }
-    
-    body.innerHTML = sessions.map(s => `
-        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg); border-radius: 10px; margin-bottom: 10px;">
-            <div style="width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
-                ${s.deviceInfo?.trusted ? '🔐' : '📱'}
-            </div>
-            <div style="flex: 1;">
-                <div style="font-weight: 500;">${s.deviceInfo?.name || 'Unknown'}</div>
-                <div style="font-size: 12px; color: var(--text2);">${s.deviceInfo?.browser || ''}</div>
-            </div>
-        </div>
-    `).join('');
+    renderConnectedUsers(sessions);
 }

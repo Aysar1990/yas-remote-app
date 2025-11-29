@@ -1,12 +1,12 @@
 /**
  * YAS Remote Pro - Configuration
- * Version: 3.1
+ * Version: 3.2
  */
 
 const CONFIG = {
     // Server
     RELAY_SERVER: "wss://yas-remote-relay.onrender.com",
-    VERSION: "3.1",
+    VERSION: "3.2",
     
     // Storage
     STORAGE_KEY: "yas_remote_trusted",
@@ -39,7 +39,16 @@ const STATE = {
     // Files
     activeTransfers: new Map(),
     recentFiles: [],
-    currentBrowsePath: ""
+    currentBrowsePath: "",
+    selectedFilePath: null,
+    clipboardFile: null,
+    
+    // Multi-User
+    connectedUsers: [],
+    
+    // File Watcher
+    watchedFolders: [],
+    fileNotifications: []
 };
 
 // File Icons

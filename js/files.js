@@ -1,6 +1,6 @@
 /**
- * YAS Remote Pro - File Transfer Module
- * Version: 3.1
+ * YAS Remote Pro - File Transfer & Manager Module
+ * Version: 3.2
  */
 
 /**
@@ -8,6 +8,7 @@
  */
 function initDropZone() {
     const dropZone = document.getElementById('dropZone');
+    if (!dropZone) return;
     
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
         dropZone.addEventListener(event, e => {
@@ -55,7 +56,6 @@ async function uploadFile(file) {
         return;
     }
     
-    // Request upload start
     STATE.ws.send(JSON.stringify({
         type: 'file_upload_start',
         fileName: file.name,
@@ -63,7 +63,6 @@ async function uploadFile(file) {
         fileType: file.type || 'application/octet-stream'
     }));
     
-    // Store file for chunked upload
     STATE.activeTransfers.set('pending_' + file.name, {
         file: file,
         status: 'pending'
@@ -120,11 +119,9 @@ async function sendFileChunks(transferId, file) {
             data: chunkData
         }));
         
-        // Small delay to prevent overwhelming
         await new Promise(r => setTimeout(r, 10));
     }
     
-    // Complete upload
     STATE.ws.send(JSON.stringify({
         type: 'file_upload_complete',
         transferId: transferId
@@ -225,6 +222,7 @@ function loadRecentFiles() {
  */
 function renderTransfers() {
     const container = document.getElementById('transfersContainer');
+    if (!container) return;
     
     if (STATE.activeTransfers.size === 0) {
         container.innerHTML = '';
@@ -268,6 +266,7 @@ function renderTransfers() {
  */
 function renderRecentFiles() {
     const container = document.getElementById('recentFilesList');
+    if (!container) return;
     
     if (STATE.recentFiles.length === 0) {
         container.innerHTML = '<p style="color: var(--text2); font-size: 13px; text-align: center; padding: 16px;">No recent transfers</p>';
@@ -279,11 +278,16 @@ function renderRecentFiles() {
             <span class="recent-file-icon">${getFileIcon(file.extension)}</span>
             <div class="recent-file-info">
                 <div class="recent-file-name">${file.name}</div>
-                <div class="recent-file-meta">${file.sizeFormatted} • ${file.direction === 'upload' ? '↑ Uploaded' : '↓ Downloaded'}</div>
+                <div class="recent-file-meta">${file.sizeFormatted} • ${file.direction === 'upload' ? '↑' : '↓'}</div>
             </div>
         </div>
     `).join('');
 }
+
+
+// ============================================
+// File Browser
+// ============================================
 
 /**
  * Show file browser
@@ -305,7 +309,7 @@ function closeFileBrowser() {
  */
 function browsePath(path) {
     STATE.currentBrowsePath = path;
-    document.getElementById('browserPath').textContent = path || 'Select location...';
+    document.getElementById('browserPath').textContent = path || 'Quick Access';
     document.getElementById('browserItems').innerHTML = '<p style="padding: 20px; text-align: center; color: var(--text2);">Loading...</p>';
     
     STATE.ws.send(JSON.stringify({
@@ -329,7 +333,7 @@ function browseParent() {
  */
 function renderBrowserItems(data) {
     const container = document.getElementById('browserItems');
-    document.getElementById('browserPath').textContent = data.path || 'Select location...';
+    document.getElementById('browserPath').textContent = data.path || 'Quick Access';
     STATE.currentBrowsePath = data.path;
     
     if (!data.items || data.items.length === 0) {
@@ -337,13 +341,282 @@ function renderBrowserItems(data) {
         return;
     }
     
-    container.innerHTML = data.items.map(item => `
-        <div class="file-item" onclick="${item.type === 'folder' 
-            ? `browsePath('${item.path.replace(/\\/g, '\\\\')}')` 
-            : `downloadFile('${item.path.replace(/\\/g, '\\\\')}')`}">
-            <span class="file-item-icon">${item.type === 'folder' ? '📁' : getFileIcon(item.name.split('.').pop())}</span>
-            <span class="file-item-name">${item.name}</span>
-            ${item.type === 'file' ? `<span class="file-item-size">${formatSize(item.size)}</span>` : ''}
+    container.innerHTML = data.items.map(item => {
+        const isQuick = item.icon === 'quick';
+        const icon = item.type === 'folder' ? (isQuick ? '⭐' : '📁') : getFileIcon(item.name.split('.').pop());
+        
+        return `
+            <div class="file-item" onclick="${item.type === 'folder' 
+                ? `browsePath('${item.path.replace(/\\/g, '\\\\')}')` 
+                : `showFileActions('${item.path.replace(/\\/g, '\\\\')}')`}">
+                <span class="file-item-icon">${icon}</span>
+                <span class="file-item-name">${item.name}</span>
+                ${item.type === 'file' ? `<span class="file-item-size">${formatSize(item.size)}</span>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// File Manager Operations
+// ============================================
+
+/**
+ * Show file actions menu
+ */
+function showFileActions(filePath) {
+    STATE.selectedFilePath = filePath;
+    document.getElementById('fileActionsModal').classList.add('show');
+    document.getElementById('selectedFileName').textContent = filePath.split(/[/\\]/).pop();
+}
+
+/**
+ * Close file actions modal
+ */
+function closeFileActions() {
+    document.getElementById('fileActionsModal').classList.remove('show');
+}
+
+/**
+ * Download selected file
+ */
+function downloadSelectedFile() {
+    downloadFile(STATE.selectedFilePath);
+    closeFileActions();
+}
+
+/**
+ * Delete selected file
+ */
+function deleteSelectedFile() {
+    if (confirm('Delete this file?')) {
+        fileOperation('delete', STATE.selectedFilePath);
+        closeFileActions();
+    }
+}
+
+/**
+ * Rename selected file
+ */
+function renameSelectedFile() {
+    const currentName = STATE.selectedFilePath.split(/[/\\]/).pop();
+    const newName = prompt('New name:', currentName);
+    
+    if (newName && newName !== currentName) {
+        fileOperation('rename', STATE.selectedFilePath, null, newName);
+        closeFileActions();
+    }
+}
+
+/**
+ * Copy selected file
+ */
+function copySelectedFile() {
+    STATE.clipboardFile = { path: STATE.selectedFilePath, operation: 'copy' };
+    toast('File copied to clipboard');
+    closeFileActions();
+}
+
+/**
+ * Cut selected file
+ */
+function cutSelectedFile() {
+    STATE.clipboardFile = { path: STATE.selectedFilePath, operation: 'move' };
+    toast('File cut to clipboard');
+    closeFileActions();
+}
+
+/**
+ * Paste file
+ */
+function pasteFile() {
+    if (!STATE.clipboardFile) {
+        toast('Nothing to paste', 'warning');
+        return;
+    }
+    
+    const destPath = STATE.currentBrowsePath || '';
+    if (!destPath) {
+        toast('Select a destination folder', 'warning');
+        return;
+    }
+    
+    const fileName = STATE.clipboardFile.path.split(/[/\\]/).pop();
+    const fullDestPath = destPath + '\\' + fileName;
+    
+    fileOperation(STATE.clipboardFile.operation, STATE.clipboardFile.path, fullDestPath);
+    
+    if (STATE.clipboardFile.operation === 'move') {
+        STATE.clipboardFile = null;
+    }
+}
+
+/**
+ * Create new folder
+ */
+function createNewFolder() {
+    const folderName = prompt('Folder name:');
+    
+    if (folderName) {
+        const folderPath = (STATE.currentBrowsePath || '') + '\\' + folderName;
+        fileOperation('create_folder', folderPath);
+    }
+}
+
+/**
+ * Execute file operation
+ */
+function fileOperation(operation, sourcePath, destPath = null, newName = null) {
+    STATE.ws.send(JSON.stringify({
+        type: 'file_operation',
+        operation: operation,
+        sourcePath: sourcePath,
+        destPath: destPath,
+        newName: newName
+    }));
+}
+
+/**
+ * Handle file operation result
+ */
+function handleFileOperationResult(data) {
+    if (data.success) {
+        toast(`${data.operation} completed`, 'success');
+        // Refresh current folder
+        if (STATE.currentBrowsePath !== undefined) {
+            browsePath(STATE.currentBrowsePath);
+        }
+    } else {
+        toast(`${data.operation} failed: ${data.error}`, 'error');
+    }
+}
+
+// ============================================
+// File Watcher
+// ============================================
+
+/**
+ * Start watching a folder
+ */
+function startWatcher(path) {
+    const watcherId = 'watcher_' + Date.now();
+    STATE.ws.send(JSON.stringify({
+        type: 'start_file_watcher',
+        path: path,
+        watcherId: watcherId
+    }));
+}
+
+/**
+ * Stop watching a folder
+ */
+function stopWatcher(watcherId) {
+    STATE.ws.send(JSON.stringify({
+        type: 'stop_file_watcher',
+        watcherId: watcherId
+    }));
+}
+
+/**
+ * Get watched folders
+ */
+function getWatchedFolders() {
+    STATE.ws.send(JSON.stringify({ type: 'get_watched_folders' }));
+}
+
+/**
+ * Handle watcher result
+ */
+function handleWatcherResult(data) {
+    if (data.success) {
+        toast('Watching: ' + data.path, 'success');
+        getWatchedFolders();
+    } else {
+        toast('Watcher error: ' + data.error, 'error');
+    }
+}
+
+/**
+ * Handle file change event
+ */
+function handleFileChange(data) {
+    const fileName = data.path.split(/[/\\]/).pop();
+    const eventIcons = {
+        'created': '📄',
+        'modified': '✏️',
+        'deleted': '🗑️',
+        'renamed': '📝'
+    };
+    
+    const icon = eventIcons[data.event] || '📄';
+    toast(`${icon} ${data.event}: ${fileName}`, 'info');
+    
+    // Add to notifications
+    addFileNotification(data);
+}
+
+/**
+ * Add file notification
+ */
+function addFileNotification(data) {
+    if (!STATE.fileNotifications) {
+        STATE.fileNotifications = [];
+    }
+    
+    STATE.fileNotifications.unshift({
+        event: data.event,
+        path: data.path,
+        timestamp: data.timestamp || Date.now()
+    });
+    
+    // Keep only last 20
+    if (STATE.fileNotifications.length > 20) {
+        STATE.fileNotifications.pop();
+    }
+    
+    updateNotificationBadge();
+}
+
+/**
+ * Update notification badge
+ */
+function updateNotificationBadge() {
+    const badge = document.getElementById('notifBadge');
+    if (badge) {
+        const count = STATE.fileNotifications?.length || 0;
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline' : 'none';
+    }
+}
+
+/**
+ * Render watched folders
+ */
+function renderWatchedFolders() {
+    const container = document.getElementById('watchedFoldersList');
+    if (!container) return;
+    
+    if (!STATE.watchedFolders?.length) {
+        container.innerHTML = '<p style="color: var(--text2); font-size: 13px; text-align: center;">No watched folders</p>';
+        return;
+    }
+    
+    container.innerHTML = STATE.watchedFolders.map(w => `
+        <div class="watched-item">
+            <span class="watched-icon">👁️</span>
+            <span class="watched-path">${w.path}</span>
+            <button class="watched-stop" onclick="stopWatcher('${w.watcherId}')">✕</button>
         </div>
     `).join('');
+}
+
+/**
+ * Watch current folder
+ */
+function watchCurrentFolder() {
+    if (STATE.currentBrowsePath) {
+        startWatcher(STATE.currentBrowsePath);
+    } else {
+        toast('Select a folder first', 'warning');
+    }
 }
