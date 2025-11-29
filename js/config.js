@@ -6,7 +6,7 @@
 const CONFIG = {
     // Server
     RELAY_SERVER: "wss://yas-remote-relay.onrender.com",
-    VERSION: "3.2",
+    VERSION: "3.3",
     
     // Storage
     STORAGE_KEY: "yas_remote_trusted",

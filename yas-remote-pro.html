@@ -45,11 +45,20 @@
                 </div>
             </label>
             
+            <!-- Wake PC Section -->
+            <div class="wake-section" id="wakeSection">
+                <div class="wake-divider">
+                    <span>PC is offline?</span>
+                </div>
+                <button class="btn btn-wake" id="wakeBtn" onclick="wakePC()">🔌 Wake PC</button>
+                <div class="wake-status" id="wakeStatus"></div>
+            </div>
+            
             <!-- Buttons -->
             <button class="btn btn-primary" id="connectBtn" onclick="connect()">Connect</button>
             <button class="btn btn-secondary" onclick="showSessionsModal()">👥 Users <span class="users-badge" id="usersCount" style="display:none">0</span></button>
             
-            <p class="login-version">YAS Remote Pro v3.2</p>
+            <p class="login-version">YAS Remote Pro v3.3</p>
         </div>
     </div>
 
@@ -310,6 +319,7 @@
     
     <!-- Scripts -->
     <script src="js/config.js"></script>
+    <script src="js/wol.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/connection.js"></script>
     <script src="js/screen.js"></script>
