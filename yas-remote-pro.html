@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>YAS Remote Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <h1 class="login-title">YAS Remote</h1>
+            <p class="login-subtitle">Control your PC remotely</p>
+            
+            <!-- Trusted Device Banner -->
+            <div class="trusted-banner" id="trustedBanner">
+                <div class="trusted-banner-title">🔐 Trusted Device</div>
+                <div class="trusted-banner-text">Quick connect available</div>
+                <button class="trusted-banner-btn" onclick="autoLogin()">⚡ Auto Connect</button>
+                <button class="trusted-banner-btn" onclick="forgetDevice()" style="margin-left: 8px;">✕ Forget</button>
+            </div>
+            
+            <!-- Messages -->
+            <div class="message error" id="errorMsg"></div>
+            <div class="message status" id="statusMsg"></div>
+            <div class="message warning" id="warningMsg"></div>
+            
+            <!-- Password -->
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" placeholder="Enter password">
+            </div>
+            
+            <!-- Trust Checkbox -->
+            <label class="checkbox-group" id="trustCheckbox">
+                <input type="checkbox" id="trustDevice">
+                <div>
+                    <div class="checkbox-label">Trust this device</div>
+                    <div class="checkbox-hint">Auto-connect for 30 days</div>
+                </div>
+            </label>
+            
+            <!-- Buttons -->
+            <button class="btn btn-primary" id="connectBtn" onclick="connect()">Connect</button>
+            <button class="btn btn-secondary" onclick="showSessionsModal()">👥 Sessions</button>
+            
+            <p class="login-version">YAS Remote Pro v3.1</p>
+        </div>
+    </div>
+
+    <!-- App Screen -->
+    <div class="app-container" id="appScreen">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="header-left">
+                <span class="app-title">YAS Remote</span>
+                <span class="conn-badge">● Connected</span>
+            </div>
+            <div class="header-right">
+                <span class="session-timer" id="sessionTimer">30:00</span>
+                <button class="header-btn" onclick="disconnect()">✕</button>
+            </div>
+        </div>
+        
+        <!-- Quality Bar -->
+        <div class="quality-bar">
+            <span class="quality-label">Quality:</span>
+            <div class="quality-btns">
+                <button class="quality-btn" onclick="setQuality('low')">Low</button>
+                <button class="quality-btn active" onclick="setQuality('medium')">Med</button>
+                <button class="quality-btn" onclick="setQuality('high')">High</button>
+            </div>
+        </div>
+        
+        <!-- Monitor Bar -->
+        <div class="monitor-bar">
+            <div class="monitor-item">
+                <span class="monitor-label">CPU</span>
+                <span class="monitor-value" id="cpuVal">--%</span>
+                <div class="monitor-bar-bg"><div class="monitor-bar-fill" id="cpuBar"></div></div>
+            </div>
+            <div class="monitor-item">
+                <span class="monitor-label">RAM</span>
+                <span class="monitor-value" id="ramVal">--%</span>
+                <div class="monitor-bar-bg"><div class="monitor-bar-fill" id="ramBar"></div></div>
+            </div>
+            <div class="monitor-item">
+                <span class="monitor-label">GPU</span>
+                <span class="monitor-value" id="gpuVal">--%</span>
+                <div class="monitor-bar-bg"><div class="monitor-bar-fill" id="gpuBar"></div></div>
+            </div>
+        </div>
+        
+        <!-- Screen -->
+        <div class="screen-container">
+            <div class="screen-wrapper">
+                <img class="screen-img" id="screenImg" style="display: none;">
+                <div class="screen-msg" id="screenMsg">📺 Waiting for screen...</div>
+            </div>
+        </div>
+        <!-- Controls -->
+        <div class="controls">
+            <div class="controls-tabs">
+                <button class="tab-btn active" onclick="switchTab('mouse')">🖱️ Mouse</button>
+                <button class="tab-btn" onclick="switchTab('keyboard')">⌨️ Keys</button>
+                <button class="tab-btn" onclick="switchTab('apps')">📱 Apps</button>
+                <button class="tab-btn" onclick="switchTab('files')">📁 Files</button>
+                <button class="tab-btn" onclick="switchTab('system')">⚙️ System</button>
+            </div>
+            
+            <!-- Mouse Tab -->
+            <div class="tab-content active" id="tab-mouse">
+                <div class="btn-grid">
+                    <button class="ctrl-btn" onclick="click1('left', 1)"><span class="ctrl-icon">👆</span><span class="ctrl-label">Click</span></button>
+                    <button class="ctrl-btn" onclick="click1('left', 2)"><span class="ctrl-icon">👆👆</span><span class="ctrl-label">Double</span></button>
+                    <button class="ctrl-btn" onclick="click1('right', 1)"><span class="ctrl-icon">👇</span><span class="ctrl-label">Right</span></button>
+                    <button class="ctrl-btn" onclick="toggleDrag()"><span class="ctrl-icon">✋</span><span class="ctrl-label">Drag</span></button>
+                    <button class="ctrl-btn" onclick="scroll1('up')"><span class="ctrl-icon">⬆️</span><span class="ctrl-label">Scroll↑</span></button>
+                    <button class="ctrl-btn" onclick="scroll1('down')"><span class="ctrl-icon">⬇️</span><span class="ctrl-label">Scroll↓</span></button>
+                    <button class="ctrl-btn" onclick="zoomIn()"><span class="ctrl-icon">🔍+</span><span class="ctrl-label">Zoom+</span></button>
+                    <button class="ctrl-btn" onclick="zoomOut()"><span class="ctrl-icon">🔍-</span><span class="ctrl-label">Zoom-</span></button>
+                </div>
+            </div>
+            
+            <!-- Keyboard Tab -->
+            <div class="tab-content" id="tab-keyboard">
+                <div class="kb-row">
+                    <input type="text" class="kb-input" id="kbInput" placeholder="Type text...">
+                    <button class="kb-send" onclick="sendText()">Send</button>
+                </div>
+                <div class="quick-keys">
+                    <button class="qk" onclick="sendKey('enter')">Enter ↵</button>
+                    <button class="qk" onclick="sendKey('backspace')">← Back</button>
+                    <button class="qk" onclick="sendKey('tab')">Tab ⇥</button>
+                    <button class="qk" onclick="sendKey('escape')">Esc</button>
+                    <button class="qk" onclick="sendKey('space')">Space</button>
+                    <button class="qk" onclick="sendKey('delete')">Del</button>
+                    <button class="qk" onclick="sendCombo('ctrl+a')">Ctrl+A</button>
+                    <button class="qk" onclick="sendCombo('ctrl+c')">Ctrl+C</button>
+                    <button class="qk" onclick="sendCombo('ctrl+v')">Ctrl+V</button>
+                    <button class="qk" onclick="sendCombo('ctrl+z')">Ctrl+Z</button>
+                    <button class="qk" onclick="sendCombo('ctrl+s')">Ctrl+S</button>
+                    <button class="qk" onclick="sendCombo('alt+tab')">Alt+Tab</button>
+                    <button class="qk" onclick="sendCombo('alt+f4')">Alt+F4</button>
+                    <button class="qk" onclick="sendCombo('win+d')">Win+D</button>
+                </div>
+                <div class="pin-section">
+                    <div class="pin-label">🔢 PIN Pad</div>
+                    <div class="pin-pad">
+                        <button class="pin-btn" onclick="sendPin(1)">1</button>
+                        <button class="pin-btn" onclick="sendPin(2)">2</button>
+                        <button class="pin-btn" onclick="sendPin(3)">3</button>
+                        <button class="pin-btn" onclick="sendPin(4)">4</button>
+                        <button class="pin-btn" onclick="sendPin(5)">5</button>
+                        <button class="pin-btn" onclick="sendPin(6)">6</button>
+                        <button class="pin-btn" onclick="sendPin(7)">7</button>
+                        <button class="pin-btn" onclick="sendPin(8)">8</button>
+                        <button class="pin-btn" onclick="sendPin(9)">9</button>
+                        <button class="pin-btn" onclick="sendKey('backspace')">⌫</button>
+                        <button class="pin-btn" onclick="sendPin(0)">0</button>
+                        <button class="pin-btn pin-enter" onclick="sendPinEnter()">✓</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Apps Tab -->
+            <div class="tab-content" id="tab-apps">
+                <div class="apps-grid">
+                    <button class="app-btn" onclick="openApp('chrome')"><span class="app-icon">🌐</span><span class="app-name">Chrome</span></button>
+                    <button class="app-btn" onclick="openApp('explorer')"><span class="app-icon">📁</span><span class="app-name">Explorer</span></button>
+                    <button class="app-btn" onclick="openApp('notepad')"><span class="app-icon">📝</span><span class="app-name">Notepad</span></button>
+                    <button class="app-btn" onclick="openApp('calc')"><span class="app-icon">🧮</span><span class="app-name">Calculator</span></button>
+                    <button class="app-btn" onclick="openApp('cmd')"><span class="app-icon">⬛</span><span class="app-name">CMD</span></button>
+                    <button class="app-btn" onclick="openApp('taskmgr')"><span class="app-icon">📊</span><span class="app-name">Task Mgr</span></button>
+                </div>
+            </div>
+            
+            <!-- Files Tab -->
+            <div class="tab-content" id="tab-files">
+                <div class="file-section">
+                    <div class="file-section-title">📤 Upload to PC</div>
+                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <div class="drop-zone-icon">📂</div>
+                        <div class="drop-zone-text">Tap or drop files here</div>
+                        <div class="drop-zone-hint">Max 100 MB per file</div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="file-action-btn" onclick="document.getElementById('fileInput').click()">📄 File</button>
+                        <button class="file-action-btn" onclick="document.getElementById('cameraInput').click()">📷 Camera</button>
+                        <button class="file-action-btn" onclick="showFileBrowser()">📥 Download</button>
+                    </div>
+                </div>
+                
+                <div id="transfersContainer"></div>
+                
+                <div class="recent-files">
+                    <div class="file-section-title">🕐 Recent Transfers</div>
+                    <div id="recentFilesList"></div>
+                </div>
+            </div>
+            
+            <!-- System Tab -->
+            <div class="tab-content" id="tab-system">
+                <div class="btn-grid">
+                    <button class="ctrl-btn" onclick="volume('up')"><span class="ctrl-icon">🔊</span><span class="ctrl-label">Vol+</span></button>
+                    <button class="ctrl-btn" onclick="volume('down')"><span class="ctrl-icon">🔉</span><span class="ctrl-label">Vol-</span></button>
+                    <button class="ctrl-btn" onclick="volume('mute')"><span class="ctrl-icon">🔇</span><span class="ctrl-label">Mute</span></button>
+                    <button class="ctrl-btn" onclick="media('playpause')"><span class="ctrl-icon">⏯️</span><span class="ctrl-label">Play</span></button>
+                    <button class="ctrl-btn" onclick="media('prev')"><span class="ctrl-icon">⏮️</span><span class="ctrl-label">Prev</span></button>
+                    <button class="ctrl-btn" onclick="media('next')"><span class="ctrl-icon">⏭️</span><span class="ctrl-label">Next</span></button>
+                    <button class="ctrl-btn" onclick="sysCmd('lock')"><span class="ctrl-icon">🔒</span><span class="ctrl-label">Lock</span></button>
+                    <button class="ctrl-btn" onclick="sysCmd('sleep')"><span class="ctrl-icon">😴</span><span class="ctrl-label">Sleep</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions Modal -->
+    <div class="modal-overlay" id="sessionsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">👥 Active Sessions</span>
+                <button class="modal-close" onclick="closeModal('sessionsModal')">✕</button>
+            </div>
+            <div class="modal-body" id="sessionsBody">
+                <p style="color: var(--text2); text-align: center;">Loading...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- File Browser Modal -->
+    <div class="modal-overlay" id="fileBrowserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">📁 Browse PC Files</span>
+                <button class="modal-close" onclick="closeFileBrowser()">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="file-browser">
+                    <div class="file-browser-header">
+                        <button class="file-browser-back" onclick="browseParent()">⬅️</button>
+                        <span class="file-browser-path" id="browserPath">Select location...</span>
+                    </div>
+                    <div id="browserItems"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden Inputs -->
+    <input type="file" id="fileInput" class="hidden-input" onchange="handleFileSelect(event)" multiple>
+    <input type="file" id="cameraInput" class="hidden-input" onchange="handleFileSelect(event)" accept="image/*" capture="camera">
+    
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/connection.js"></script>
+    <script src="js/screen.js"></script>
+    <script src="js/files.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>
