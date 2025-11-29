@@ -1,4 +1,4 @@
-/* YAS Remote Pro - Styles v3.1 */
+/* YAS Remote Pro - Styles v3.4 */
 
 * { margin: 0; padding: 0; box-sizing: border-box; touch-action: manipulation; }
 
@@ -143,6 +143,7 @@ body {
 .session-timer.warning { color: var(--warning); background: #fffbeb; }
 .session-timer.danger { color: var(--error); background: #fef2f2; }
 
+
 /* ==================== Screen ==================== */
 .screen-container { flex: 1; background: #f1f5f9; position: relative; overflow: hidden; }
 .screen-wrapper { width: 100%; height: 100%; overflow: auto; -webkit-overflow-scrolling: touch; }
@@ -179,6 +180,99 @@ body {
 .ctrl-btn:active { background: var(--primary); border-color: var(--primary); transform: scale(0.95); }
 .ctrl-icon { font-size: 20px; }
 .ctrl-label { font-size: 11px; font-weight: 500; color: var(--text2); }
+
+/* ==================== Scroll Wheel Button ==================== */
+.scroll-wheel-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-column: span 2;
+}
+
+.scroll-wheel {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #e2e8f0, #f8fafc);
+    border: 3px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.1),
+        0 4px 8px rgba(0,0,0,0.1);
+}
+
+.scroll-wheel::before {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 50px;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 15px;
+    box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+}
+
+.scroll-wheel::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 3px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.scroll-btn-up, .scroll-btn-down {
+    position: absolute;
+    width: 100%;
+    height: 45%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--text2);
+    transition: all 0.15s;
+    z-index: 10;
+}
+
+.scroll-btn-up { 
+    top: 0; 
+    border-radius: 45px 45px 0 0;
+}
+
+.scroll-btn-down { 
+    bottom: 0; 
+    border-radius: 0 0 45px 45px;
+}
+
+.scroll-btn-up:active, .scroll-btn-down:active {
+    background: rgba(71, 85, 105, 0.2);
+}
+
+.scroll-btn-up:active ~ .scroll-wheel::before {
+    transform: translateY(-3px);
+}
+
+.scroll-btn-down:active ~ .scroll-wheel::before {
+    transform: translateY(3px);
+}
+
+/* Scroll Wheel Labels */
+.scroll-label {
+    font-size: 10px;
+    color: var(--text2);
+    font-weight: 500;
+    text-align: center;
+    margin-top: 6px;
+}
+
 
 /* ==================== Keyboard ==================== */
 .kb-row { display: flex; gap: 10px; margin-bottom: 10px; }
@@ -237,6 +331,7 @@ body {
 .recent-file-name { font-size: 13px; font-weight: 500; }
 .recent-file-meta { font-size: 11px; color: var(--text2); }
 
+
 /* ==================== File Browser ==================== */
 .file-browser { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; }
 .file-browser-header { display: flex; align-items: center; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; }
@@ -264,6 +359,7 @@ body {
 .toast.warning { background: var(--warning); }
 .toast.error { background: var(--error); }
 .toast.success { background: var(--success); }
+.toast.info { background: var(--primary); }
 
 /* ==================== Click Indicator ==================== */
 .click-dot { position: fixed; width: 44px; height: 44px; border: 3px solid var(--primary); background: rgba(71,85,105,0.2); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); animation: pulse 0.5s ease-out forwards; z-index: 100; }
@@ -271,7 +367,6 @@ body {
 
 /* ==================== Utility ==================== */
 .hidden-input { display: none; }
-
 
 /* ==================== Connected Users ==================== */
 .user-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg); border-radius: 10px; margin-bottom: 10px; }
@@ -281,8 +376,8 @@ body {
 .user-name { font-size: 14px; font-weight: 500; }
 .user-meta { font-size: 12px; color: var(--text2); }
 .user-kick { background: none; border: none; color: var(--error); font-size: 16px; padding: 4px 8px; cursor: pointer; }
-
 .users-badge { background: var(--primary); color: white; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 10px; margin-left: 4px; }
+
 
 /* ==================== File Actions ==================== */
 .file-actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -290,7 +385,6 @@ body {
 .file-action:active { background: var(--primary); color: white; }
 .file-action-icon { font-size: 24px; }
 .file-action-label { font-size: 12px; font-weight: 500; }
-
 .selected-file-name { font-size: 14px; font-weight: 500; padding: 12px; background: var(--bg); border-radius: 8px; margin-bottom: 16px; word-break: break-all; }
 
 /* ==================== File Watcher ==================== */
@@ -298,7 +392,6 @@ body {
 .watched-icon { font-size: 18px; }
 .watched-path { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .watched-stop { background: none; border: none; color: var(--error); font-size: 14px; padding: 4px; cursor: pointer; }
-
 .watch-btn { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; cursor: pointer; }
 .watch-btn:active { background: var(--primary); color: white; }
 
@@ -308,10 +401,6 @@ body {
 .notif-event { font-size: 13px; font-weight: 500; }
 .notif-path { font-size: 11px; color: var(--text2); word-break: break-all; }
 .notif-time { font-size: 10px; color: var(--text2); }
-
-/* ==================== Toast Info ==================== */
-.toast.info { background: var(--primary); }
-
 
 /* ==================== Wake on LAN ==================== */
 .wake-section { margin-top: 20px; padding-top: 16px; }

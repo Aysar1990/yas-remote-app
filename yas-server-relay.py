@@ -378,7 +378,13 @@ def handle_command(cmd):
             pyautogui.scroll(amount if direction == "up" else -amount)
         
         elif cmd_type == "type":
-            pyautogui.write(cmd.get("text", ""), interval=0.01)
+            text = cmd.get("text", "")
+            # استخدام Clipboard لدعم العربي والأحرف الخاصة
+            pyperclip.copy(text)
+            pyautogui.hotkey('ctrl', 'a')  # تحديد الكل
+            time.sleep(0.05)
+            pyautogui.hotkey('ctrl', 'v')  # لصق
+            time.sleep(0.1)
         
         elif cmd_type == "key":
             pyautogui.press(cmd.get("key", ""))

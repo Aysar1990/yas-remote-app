@@ -113,7 +113,7 @@ function click1(btn, n) {
  * Mouse scroll
  */
 function scroll1(dir) {
-    send({ type: 'scroll', direction: dir, amount: 3 });
+    send({ type: 'scroll', direction: dir, amount: 10 });
 }
 
 /**

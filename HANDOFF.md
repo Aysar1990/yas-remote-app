@@ -22,8 +22,8 @@
 
 ```
 C:\Users\aysar\Documents\Remote control\Android App\
-├── yas-remote-pro.html          # الواجهة الرئيسية (HTML فقط)
-├── yas-server-relay.py          # سيرفر Python للكمبيوتر (v3.2)
+├── yas-remote-pro.html          # الواجهة الرئيسية
+├── yas-server-relay.py          # سيرفر Python للكمبيوتر (v3.3)
 ├── HANDOFF.md                   # هذا الملف
 ├── css/
 │   └── styles.css               # جميع الأنماط
@@ -36,54 +36,71 @@ C:\Users\aysar\Documents\Remote control\Android App\
 │   ├── files.js                 # نقل الملفات + File Manager + File Watcher
 │   └── ui.js                    # الواجهة + الأوامر
 └── relay-server/                # مجلد Git منفصل للـ Relay Server
-    ├── server.js                # السيرفر الرئيسي (v3.2)
+    ├── server.js                # السيرفر الرئيسي (v3.3)
     ├── auth.js                  # وحدة المصادقة
     ├── sessions.js              # إدارة الجلسات
     ├── file-handler.js          # معالجة الملفات
     └── package.json             # التبعيات
+
+C:\Users\aysar\Documents\Remote control\YasRemoteApp\
+├── www/                         # ملفات الواجهة للتطبيق
+├── android/                     # مشروع Android (Capacitor)
+├── capacitor.config.json        # إعدادات Capacitor
+└── package.json                 # تبعيات Node.js
 ```
 
 ---
 
-## 🔧 الحالة الحالية
+## 📊 الميزات حسب الإصدار
 
-### ✅ ما تم إنجازه:
-1. **v3.2 Features:**
-   - Multi-User (قائمة المستخدمين المتصلين)
-   - File Manager (نسخ، نقل، حذف، إعادة تسمية)
-   - File Browser المحسّن مع Quick Access
-   - File Watcher (مراقبة المجلدات)
-
-2. **البنية التحتية:**
-   - تقسيم ملف HTML الكبير إلى modules
-   - رفع الواجهة على GitHub Pages
-   - رفع السيرفر على Render
-
-3. **إصلاح أخير:**
-   - إضافة دالة `checkLockout` في auth.js
-   - إصلاح `validatePassword` ليقبل parameter واحد
-   - إصلاح `recordFailedAttempt`
-
-### ⏳ الحالة الآن:
-- تم رفع الإصلاحات على GitHub
-- **يجب انتظار Render لإعادة البناء (1-2 دقيقة)**
-- بعدها يجب إعادة تشغيل `python yas-server-relay.py`
+| الإصدار | الميزات |
+|---------|---------|
+| v1.0 | Screen sharing, Mouse, Keyboard |
+| v2.0 | Apps control, System commands, File download |
+| v3.0 | Authentication, Sessions, Trusted Devices |
+| v3.1 | File Transfer (Upload/Download), Security Log |
+| v3.2 | Multi-User, File Manager, File Browser, File Watcher |
+| **v3.3** | Wake on LAN, تطبيق Android (Capacitor), دعم الكتابة العربية |
 
 ---
 
-## 🐛 المشكلة الأخيرة (تم حلها)
+## ✅ ما تم إنجازه في هذه الجلسة (29 نوفمبر 2025):
 
-**الخطأ في Render logs:**
+### 1️⃣ Wake on LAN عبر Tailscale:
+- تثبيت Tailscale على الكمبيوتر والهاتف
+- تفعيل Wake on LAN في BIOS (Gigabyte B550 AORUS MASTER)
+- إضافة زر "Wake PC" في واجهة التطبيق
+- إضافة endpoint `/wol` في Relay Server
+- ملف `js/wol.js` للتحكم
+
+**ملاحظة مهمة:** Wake on LAN يعمل فقط:
+- من نفس الشبكة المحلية (WiFi) عبر تطبيق Wake On Lan
+- أو عند استخدام Sleep بدل Shutdown (عبر Tailscale من أي مكان)
+- لتشغيله من الإنترنت مع Shutdown الكامل، يحتاج جهاز وسيط (هاتف قديم أو Raspberry Pi)
+
+### 2️⃣ تطبيق Android (Capacitor):
+- تثبيت Node.js v24.11.1
+- تثبيت Android Studio مع SDK
+- إنشاء مشروع Capacitor
+- بناء ملف APK بنجاح
+
+**موقع الـ APK:**
 ```
-Invalid message: auth.checkLockout is not a function
+C:\Users\aysar\Documents\Remote control\YasRemoteApp\android\app\build\outputs\apk\debug\app-debug.apk
 ```
 
-**السبب:** ملف auth.js القديم لم يكن يحتوي على دالة `checkLockout`
+### 3️⃣ تشغيل السيرفر تلقائياً مع Windows:
+- إنشاء اختصار في مجلد Startup
+- السيرفر يشتغل تلقائياً عند تشغيل الكمبيوتر
 
-**الحل:** تم إضافة الدوال المطلوبة:
-- `checkLockout(password)` - للتحقق من القفل
-- `validatePassword(password)` - للتحقق من صحة كلمة المرور
-- تحديث `recordFailedAttempt(key)` - لتسجيل المحاولات الفاشلة
+**موقع الاختصار:**
+```
+%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\YasRemoteServer.lnk
+```
+
+### 4️⃣ دعم الكتابة العربية:
+- تعديل `yas-server-relay.py` لاستخدام Clipboard
+- الترتيب: Ctrl+A → Ctrl+V (تحديد الكل ثم لصق)
 
 ---
 
@@ -94,6 +111,8 @@ Invalid message: auth.checkLockout is not a function
 cd "C:\Users\aysar\Documents\Remote control\Android App"
 python yas-server-relay.py
 ```
+
+**أو يشتغل تلقائياً مع Windows**
 
 ### 2️⃣ فتح الواجهة:
 ```
@@ -107,14 +126,38 @@ YasRemote2025
 
 ---
 
+## 📱 بناء تطبيق Android:
+
+### لتحديث التطبيق:
+```powershell
+cd "C:\Users\aysar\Documents\Remote control\YasRemoteApp"
+Copy-Item -Path "..\Android App\yas-remote-pro.html" -Destination "www\index.html" -Force
+Copy-Item -Path "..\Android App\css\*" -Destination "www\css\" -Force
+Copy-Item -Path "..\Android App\js\*" -Destination "www\js\" -Force
+npx cap sync android
+```
+
+### لبناء APK:
+```powershell
+cd "C:\Users\aysar\Documents\Remote control\YasRemoteApp\android"
+.\gradlew assembleDebug
+```
+
+### أو من Android Studio:
+```
+Build → Build Bundle(s) / APK(s) → Build APK(s)
+```
+
+---
+
 ## 📤 كيفية رفع التحديثات
 
 ### رفع الواجهة (GitHub Pages):
 ```powershell
 cd "C:\Users\aysar\Documents\Remote control\Android App"
-git add .
-git commit -m "وصف التحديث"
-git push
+& "C:\Program Files\Git\bin\git.exe" add .
+& "C:\Program Files\Git\bin\git.exe" commit -m "وصف التحديث"
+& "C:\Program Files\Git\bin\git.exe" push
 ```
 
 ### رفع السيرفر (Render):
@@ -129,28 +172,21 @@ cd "C:\Users\aysar\Documents\Remote control\Android App\relay-server"
 
 ---
 
-## 📊 الميزات حسب الإصدار
+## 🌐 Tailscale:
 
-| الإصدار | الميزات |
-|---------|---------|
-| v1.0 | Screen sharing, Mouse, Keyboard |
-| v2.0 | Apps control, System commands, File download |
-| v3.0 | Authentication, Sessions, Trusted Devices |
-| v3.1 | File Transfer (Upload/Download), Security Log |
-| v3.2 | Multi-User, File Manager, File Browser, File Watcher |
-| **v3.3** | **Wake on LAN عبر Tailscale** |
+### معلومات الأجهزة:
+| الجهاز | Tailscale IP |
+|--------|--------------|
+| الكمبيوتر (aysar) | 100.118.245.72 |
+| الهاتف (samsung) | 100.106.1.98 |
 
----
+### MAC Address للكمبيوتر:
+- **Ethernet:** 18-C0-4D-01-E9-AE
+- **WiFi:** E0-D4-E8-73-DD-F9
 
-## 🔮 الميزات القادمة
-
-| المرحلة | الميزة | الوصف |
-|---------|--------|-------|
-| 3 | Clipboard Sync | مزامنة الحافظة بين الهاتف والكمبيوتر |
-| 3 | URL Opener | فتح روابط من الهاتف على الكمبيوتر |
-| 6 | Wake on LAN | تشغيل الكمبيوتر المطفأ عن بعد |
-| 6 | PWA | تثبيت كتطبيق على الهاتف |
-| 6 | Auto-start | تشغيل السيرفر تلقائياً مع Windows |
+### إعدادات BIOS (Gigabyte B550 AORUS MASTER):
+- **Wake on LAN:** Enabled ✅
+- **ErP:** Disabled ✅
 
 ---
 
@@ -164,12 +200,15 @@ cd "C:\Users\aysar\Documents\Remote control\Android App\relay-server"
 
 ---
 
-## 📝 ملاحظات مهمة
+## 🔮 الميزات القادمة
 
-1. **لا تفتح الملف محلياً** (`file:///...`) - استخدم GitHub Pages دائماً
-2. **relay-server مجلد Git منفصل** - يحتاج push منفصل
-3. **Render Free tier** - ينام بعد 15 دقيقة من عدم النشاط (أول طلب يأخذ ~50 ثانية)
-4. **watchdog مطلوب:** `pip install watchdog`
+| الأولوية | الميزة | الوصف |
+|----------|--------|-------|
+| عالية | Native Android App | تحويل Capacitor لتطبيق كامل على Play Store |
+| عالية | Push Notifications | إشعارات عند الاتصال/قطع الاتصال |
+| متوسطة | Clipboard Sync | مزامنة الحافظة بين الهاتف والكمبيوتر |
+| متوسطة | URL Opener | فتح روابط من الهاتف على الكمبيوتر |
+| منخفضة | PWA | تثبيت كتطبيق Progressive Web App |
 
 ---
 
@@ -179,16 +218,37 @@ cd "C:\Users\aysar\Documents\Remote control\Android App\relay-server"
 |---------|------|
 | Waiting for screen... | تأكد أن `python yas-server-relay.py` يعمل |
 | Connecting... لا يتوقف | تحقق من Render logs للأخطاء |
-| الملفات لا تعمل محلياً | استخدم GitHub Pages أو `python -m http.server 8080` |
-| auth.X is not a function | تحقق من auth.js وأعد الرفع على GitHub |
+| Wake PC لا يعمل | استخدم تطبيق Wake On Lan من نفس الشبكة أو استخدم Sleep |
+| الكتابة العربية لا تعمل | تأكد من إعادة تشغيل السيرفر بعد التعديل |
+| GitHub Pages لا يتحدث | امسح Cache المتصفح أو استخدم Incognito |
+| APK لا يُبنى | تأكد من Gradle Sync في Android Studio |
+
+---
+
+## 📝 ملاحظات مهمة
+
+1. **relay-server مجلد Git منفصل** - يحتاج push منفصل
+2. **Render Free tier** - ينام بعد 15 دقيقة من عدم النشاط
+3. **Wake on LAN** - يعمل فقط مع كيبل Ethernet (ليس WiFi)
+4. **Tailscale** - لازم يكون شغال على الجهازين للاتصال المباشر
+5. **السيرفر المحلي** - التعديلات عليه لا تحتاج رفع لـ Git
 
 ---
 
 ## 📞 للمتابعة
 
-إذا استمرت مشكلة الاتصال:
+### إذا استمرت مشكلة الاتصال:
 1. افتح Render Dashboard
 2. اضغط Manual Deploy → Deploy latest commit
 3. انتظر حتى Status: Live
 4. أعد تشغيل السيرفر المحلي
-5. جرب الاتصال مرة أخرى
+
+### للتحقق من السيرفر المحلي:
+```powershell
+Get-Process python* -ErrorAction SilentlyContinue
+```
+
+### لإيقاف السيرفر:
+```powershell
+Get-Process python* -ErrorAction SilentlyContinue | Stop-Process -Force
+```

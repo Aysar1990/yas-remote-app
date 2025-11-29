@@ -132,8 +132,18 @@
                     <button class="ctrl-btn" onclick="click1('left', 2)"><span class="ctrl-icon">👆👆</span><span class="ctrl-label">Double</span></button>
                     <button class="ctrl-btn" onclick="click1('right', 1)"><span class="ctrl-icon">👇</span><span class="ctrl-label">Right</span></button>
                     <button class="ctrl-btn" onclick="toggleDrag()"><span class="ctrl-icon">✋</span><span class="ctrl-label">Drag</span></button>
-                    <button class="ctrl-btn" onclick="scroll1('up')"><span class="ctrl-icon">⬆️</span><span class="ctrl-label">Scroll↑</span></button>
-                    <button class="ctrl-btn" onclick="scroll1('down')"><span class="ctrl-icon">⬇️</span><span class="ctrl-label">Scroll↓</span></button>
+                    
+                    <!-- Scroll Wheel -->
+                    <div class="scroll-wheel-container">
+                        <div>
+                            <div class="scroll-wheel">
+                                <button class="scroll-btn-up" onclick="scroll1('up')">▲</button>
+                                <button class="scroll-btn-down" onclick="scroll1('down')">▼</button>
+                            </div>
+                            <div class="scroll-label">Scroll</div>
+                        </div>
+                    </div>
+                    
                     <button class="ctrl-btn" onclick="zoomIn()"><span class="ctrl-icon">🔍+</span><span class="ctrl-label">Zoom+</span></button>
                     <button class="ctrl-btn" onclick="zoomOut()"><span class="ctrl-icon">🔍-</span><span class="ctrl-label">Zoom-</span></button>
                 </div>
