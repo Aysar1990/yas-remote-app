@@ -574,6 +574,21 @@ async def connect_to_relay():
                 
                 screenshot_task = asyncio.create_task(send_screenshots())
                 
+                # Keep-Alive task to prevent relay server sleep on Render.com
+                async def keep_alive():
+                    while True:
+                        try:
+                            await websocket.send(json.dumps({
+                                "type": "ping",
+                                "timestamp": time.time()
+                            }))
+                            print("💓 Keep-Alive ping sent")
+                        except Exception as e:
+                            print(f"⚠️ Keep-alive error: {e}")
+                        await asyncio.sleep(300)  # Every 5 minutes
+                
+                keep_alive_task = asyncio.create_task(keep_alive())
+                
                 # Process file events task
                 async def process_file_events():
                     while True:
@@ -620,6 +635,7 @@ async def connect_to_relay():
                         print(f"Message error: {e}")
                 
                 screenshot_task.cancel()
+                keep_alive_task.cancel()
                 file_events_task.cancel()
                 
         except websockets.ConnectionClosed:
