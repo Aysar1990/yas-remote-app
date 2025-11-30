@@ -146,6 +146,11 @@ function handleConnected(data) {
     STATE.connectedUsers = [];
     STATE.watchedFolders = [];
     
+    // Reset reconnection counter
+    if (typeof resetReconnectCounter === 'function') {
+        resetReconnectCounter();
+    }
+    
     // Save trusted device if deviceId returned
     if (data.deviceId) {
         saveTrustedDevice(data.deviceId, document.getElementById('password').value);

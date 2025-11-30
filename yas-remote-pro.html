@@ -329,11 +329,22 @@
     
     <!-- Scripts -->
     <script src="js/config.js"></script>
+    <script src="js/lifecycle.js"></script>
     <script src="js/wol.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/connection.js"></script>
     <script src="js/screen.js"></script>
     <script src="js/files.js"></script>
     <script src="js/ui.js"></script>
+    
+    <!-- Capacitor (for Android app) -->
+    <script>
+        // Load Capacitor if available
+        if (window.location.protocol === 'capacitor:') {
+            const script = document.createElement('script');
+            script.src = 'capacitor.js';
+            document.head.appendChild(script);
+        }
+    </script>
 </body>
 </html>
